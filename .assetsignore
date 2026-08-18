@@ -1,0 +1,17 @@
+.git/
+.github/
+node_modules/
+
+functions/
+
+.env
+.env.*
+*.log
+
+Dockerfile
+docker-compose.yml
+render.yaml
+nodemon.json
+
+package.json
+package-lock.json
