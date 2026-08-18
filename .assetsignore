@@ -3,6 +3,11 @@
 node_modules/
 
 functions/
+.wrangler/
+
+worker.js
+wrangler.json
+wrangler.jsonc
 
 .env
 .env.*
