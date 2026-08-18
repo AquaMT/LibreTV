@@ -1,1 +1,32 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "libretv",
+  "main": "worker.js",
+  "compatibility_date": "2026-08-18",
 
+  "assets": {
+    "directory": ".",
+    "binding": "ASSETS",
+    "run_worker_first": [
+      "/",
+      "/*.html",
+      "/proxy/*"
+    ]
+  },
+
+  "kv_namespaces": [
+    {
+      "binding": "LIBRETV_PROXY_KV",
+      "id": "替换成你原来Pages的KV_NAMESPACE_ID"
+    }
+  ],
+
+  "vars": {
+    "CACHE_TTL": "86400",
+    "MAX_RECURSION": "5",
+    "DEBUG": "false",
+    "USER_AGENTS_JSON": "[\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\"]"
+  },
+
+  "workers_dev": true
+}
