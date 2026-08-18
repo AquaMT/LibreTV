@@ -8,18 +8,9 @@
     "directory": ".",
     "binding": "ASSETS",
     "run_worker_first": [
-      "/",
-      "/*.html",
       "/proxy/*"
     ]
   },
-
-  "kv_namespaces": [
-    {
-      "binding": "LIBRETV_PROXY_KV",
-      "id": "替换成你原来Pages的KV_NAMESPACE_ID"
-    }
-  ],
 
   "vars": {
     "CACHE_TTL": "86400",
