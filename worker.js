@@ -410,14 +410,6 @@ async function fetchUpstream(
     headers.set("Range", range);
   }
 
-  /*
-   * 一些上游服务器会检查这些头。
-   */
-  const accept = request.headers.get("Accept");
-
-  if (accept) {
-    headers.set("Accept", accept);
-  }
 
   const response = await fetch(targetUrl, {
     method: request.method,
