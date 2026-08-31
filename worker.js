@@ -105,51 +105,6 @@ async function handleStaticAsset(request, env) {
     });
 }
 
-  const contentType = response.headers.get("content-type") || "";
-
-  /*
-   * 只处理 HTML。
-   *
-   * 对 JS/CSS/图片等静态资源直接返回，
-   * 避免不必要的 Worker 处理。
-   */
-  if (!contentType.toLowerCase().includes("text/html")) {
-    return response;
-  }
-
-  const password = env.PASSWORD || "";
-
-  let passwordHash = "";
-
-  if (password) {
-    passwordHash = await sha256(password);
-  }
-
-  let html = await response.text();
-
-  /*
-   * 与原 functions/_middleware.js 保持兼容。
-   */
-  html = html.replace(
-    'window.__ENV__.PASSWORD = "{{PASSWORD}}";',
-    `window.__ENV__.PASSWORD = "${passwordHash}";`
-  );
-
-  const headers = new Headers(response.headers);
-
-  /*
-   * body 被重新生成，因此不能继续使用原始 Content-Length。
-   */
-  headers.delete("Content-Length");
-
-  return new Response(html, {
-    status: response.status,
-    statusText: response.statusText,
-    headers
-  });
-}
-
-
 /* =========================================================
  * Proxy
  * ======================================================= */
