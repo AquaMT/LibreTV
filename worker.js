@@ -893,9 +893,16 @@ async function validateAuth(
     return false;
   }
 
-  const passwordHash =
-    await sha256(password);
+const passwordHash =
+  await sha256(password);
 
+console.log("[AUTH DEBUG]", {
+  authHash,
+  passwordHash,
+  match: authHash === passwordHash,
+  timestamp,
+  passwordLength: password.length
+});
   /*
    * SHA256(password)
    */
