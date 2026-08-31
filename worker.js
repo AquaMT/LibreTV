@@ -85,8 +85,7 @@ async function handleStaticAsset(request, env) {
   let html = await response.text();
 
   /*
-   * PASSWORD 是 Worker Secret/变量中的明文密码。
-   * 前端需要的是 SHA-256(PASSWORD)。
+   * 将 {{PASSWORD}} 替换为 PASSWORD 的 SHA-256
    */
   const password = env.PASSWORD || "";
 
@@ -96,18 +95,12 @@ async function handleStaticAsset(request, env) {
     passwordHash = await sha256(password);
   }
 
-  /*
-   * 不再要求完整字符串完全匹配，
-   * 直接替换 {{PASSWORD}} 占位符。
-   */
   html = html.replace(
     /\{\{PASSWORD\}\}/g,
     passwordHash
   );
 
   const headers = new Headers(response.headers);
-
-  // HTML 内容长度已经改变
   headers.delete("Content-Length");
 
   return new Response(html, {
@@ -116,6 +109,14 @@ async function handleStaticAsset(request, env) {
     headers
   });
 }
+
+
+/* =========================================================
+ * Proxy
+ * ======================================================= */
+
+async function handleProxy(request, env, ctx, config) {
+  const url = new URL(request.url);
 
   const targetUrl = getTargetUrlFromPath(url.pathname);
 
@@ -149,7 +150,6 @@ async function handleStaticAsset(request, env) {
     );
   }
 }
-
 
 /* =========================================================
  * Proxy main logic
