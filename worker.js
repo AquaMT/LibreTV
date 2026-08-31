@@ -62,7 +62,48 @@ export default {
  * ======================================================= */
 
 async function handleStaticAsset(request, env) {
-  const response = await env.ASSETS.fetch(request);
+    let response = await env.ASSETS.fetch(request);
+
+    // /player 需要明确映射到 player.html
+    const url = new URL(request.url);
+
+    if (url.pathname === "/player") {
+        const playerUrl = new URL("/player.html", request.url);
+        response = await env.ASSETS.fetch(
+            new Request(playerUrl.toString(), request)
+        );
+    }
+
+    const contentType = response.headers.get("content-type") || "";
+
+    if (!contentType.toLowerCase().includes("text/html")) {
+        return response;
+    }
+
+    const password = env.PASSWORD || "";
+
+    let passwordHash = "";
+
+    if (password) {
+        passwordHash = await sha256(password);
+    }
+
+    let html = await response.text();
+
+    html = html.replace(
+        'window.__ENV__.PASSWORD = "{{PASSWORD}}";',
+        `window.__ENV__.PASSWORD = "${passwordHash}";`
+    );
+
+    const headers = new Headers(response.headers);
+    headers.delete("Content-Length");
+
+    return new Response(html, {
+        status: response.status,
+        statusText: response.statusText,
+        headers
+    });
+}
 
   const contentType = response.headers.get("content-type") || "";
 
