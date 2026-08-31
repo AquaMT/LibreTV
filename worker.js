@@ -148,7 +148,6 @@ async function handleStaticAsset(request, env) {
       500
     );
   }
-}
 
 
 /* =========================================================
