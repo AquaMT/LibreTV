@@ -21,14 +21,40 @@ async function getPasswordHash() {
         return storedHash;
     }
     
-    // 2. 尝试从密码验证状态获取（password.js 验证后存储的哈希）
-    const passwordVerified = localStorage.getItem('passwordVerified');
-    const storedPasswordHash = localStorage.getItem('passwordHash');
-    if (passwordVerified === 'true' && storedPasswordHash) {
-        localStorage.setItem('proxyAuthHash', storedPasswordHash);
-        cachedPasswordHash = storedPasswordHash;
-        return storedPasswordHash;
+// 2. 尝试从 password.js 的验证状态获取密码哈希
+const passwordVerifiedRaw =
+    localStorage.getItem('passwordVerified');
+
+if (passwordVerifiedRaw) {
+    try {
+        const passwordState =
+            JSON.parse(passwordVerifiedRaw);
+
+        if (
+            passwordState &&
+            passwordState.verified === true &&
+            passwordState.passwordHash
+        ) {
+            const storedPasswordHash =
+                passwordState.passwordHash;
+
+            localStorage.setItem(
+                'proxyAuthHash',
+                storedPasswordHash
+            );
+
+            cachedPasswordHash =
+                storedPasswordHash;
+
+            return storedPasswordHash;
+        }
+    } catch (error) {
+        console.warn(
+            '解析 passwordVerified 失败:',
+            error
+        );
     }
+}
     
     // 3. 尝试从用户输入的密码生成哈希
     const userPassword = localStorage.getItem('userPassword');
