@@ -18,6 +18,7 @@
     "CACHE_TTL": "86400",
     "MAX_RECURSION": "5",
     "DEBUG": "false",
+    "PASSWORD": "6e15691dce689cc68b0a529d5a0b232535b5ca19440e1b9db60a028cf9980ac7",
     "USER_AGENTS_JSON": "[\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\"]"
   },
 
