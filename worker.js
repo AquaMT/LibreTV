@@ -57,90 +57,65 @@ export default {
 };
 
 
-/* =========================================================
- * Static Assets / Pages Middleware replacement
- * ======================================================= */
-
 async function handleStaticAsset(request, env) {
-    let response = await env.ASSETS.fetch(request);
-
-    // /player 需要明确映射到 player.html
-    const url = new URL(request.url);
-
-    if (url.pathname === "/player") {
-        const playerUrl = new URL("/player.html", request.url);
-        response = await env.ASSETS.fetch(
-            new Request(playerUrl.toString(), request)
-        );
-    }
-
-    const contentType = response.headers.get("content-type") || "";
-
-    if (!contentType.toLowerCase().includes("text/html")) {
-        return response;
-    }
-
-    const password = env.PASSWORD || "";
-
-    let passwordHash = "";
-
-    if (password) {
-        passwordHash = await sha256(password);
-    }
-
-    let html = await response.text();
-
-    html = html.replace(
-        'window.__ENV__.PASSWORD = "{{PASSWORD}}";',
-        `window.__ENV__.PASSWORD = "${passwordHash}";`
-    );
-
-    const headers = new Headers(response.headers);
-    headers.delete("Content-Length");
-
-    return new Response(html, {
-        status: response.status,
-        statusText: response.statusText,
-        headers
-    });
-}
-
-/* =========================================================
- * Proxy
- * ======================================================= */
-
-async function handleProxy(request, env, ctx) {
   const url = new URL(request.url);
 
-  const config = getConfig(env);
+  // /player 实际使用 player.html
+  let assetRequest = request;
 
-  /*
-   * CORS preflight
-   */
-  if (request.method === "OPTIONS") {
-    return new Response(null, {
-      status: 204,
-      headers: corsHeaders()
-    });
-  }
+  if (url.pathname === "/player") {
+    const playerUrl = new URL("/player.html", request.url);
 
-  /*
-   * LibreTV 原来的鉴权方式：
-   *
-   * auth = SHA256(PASSWORD)
-   * t    = 时间戳
-   */
-  const validAuth = await validateAuth(request, env);
-
-  if (!validAuth) {
-    return jsonResponse(
-      {
-        success: false,
-        error: "代理访问未授权：请检查密码配置或鉴权参数"
-      },
-      401
+    assetRequest = new Request(
+      playerUrl.toString(),
+      request
     );
   }
+
+  let response = await env.ASSETS.fetch(assetRequest);
+
+  const contentType =
+    response.headers.get("content-type") || "";
+
+  // 非 HTML 直接返回
+  if (!contentType.toLowerCase().includes("text/html")) {
+    return response;
+  }
+
+  let html = await response.text();
+
+  /*
+   * PASSWORD 是 Worker Secret/变量中的明文密码。
+   * 前端需要的是 SHA-256(PASSWORD)。
+   */
+  const password = env.PASSWORD || "";
+
+  let passwordHash = "";
+
+  if (password) {
+    passwordHash = await sha256(password);
+  }
+
+  /*
+   * 不再要求完整字符串完全匹配，
+   * 直接替换 {{PASSWORD}} 占位符。
+   */
+  html = html.replace(
+    /\{\{PASSWORD\}\}/g,
+    passwordHash
+  );
+
+  const headers = new Headers(response.headers);
+
+  // HTML 内容长度已经改变
+  headers.delete("Content-Length");
+
+  return new Response(html, {
+    status: response.status,
+    statusText: response.statusText,
+    headers
+  });
+}
 
   const targetUrl = getTargetUrlFromPath(url.pathname);
 
